@@ -1,5 +1,6 @@
 {
   "owner": "actions",
   "name": "attest",
-  "visibility": ""
+  "visibility": "internal",
+  "description": "Action for generating attestations for workflow artifacts"
 }
