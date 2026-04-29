@@ -1,6 +1,12 @@
 # actions/attest
 
-Hardened GitHub Action by [Chainguard](https://www.chainguard.dev).
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/actions/attest](https://github.com/actions/attest).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v4.1.0 | [`v4.1.0`](https://github.com/chainguard-actions/attest/tree/v4.1.0) | — |
 
 ## Privacy
 
