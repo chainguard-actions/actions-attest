@@ -2,5 +2,6 @@
   "owner": "actions",
   "name": "attest",
   "visibility": "internal",
-  "description": "Action for generating attestations for workflow artifacts"
+  "description": "Action for generating attestations for workflow artifacts",
+  "block_publish": false
 }
