@@ -1,6 +1,6 @@
 # actions/attest
 
-Action for generating attestations for workflow artifacts
+Generate attestations for build artifacts
 
 Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/actions/attest](https://github.com/actions/attest).
 
