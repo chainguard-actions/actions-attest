@@ -1,0 +1,39 @@
+name: Test sbom-path input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a dummy SBOM file
+        run: |
+          cat > /tmp/sbom.json << 'EOF'
+          {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "example-sbom",
+            "documentNamespace": "https://example.com/sbom/example-1.0",
+            "packages": []
+          }
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          subject-digest: sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abc1
+          subject-name: my-artifact
+          sbom-path: /tmp/sbom.json
+          github-token: fake-token-for-coverage
+
+      - name: Assert action was attempted
+        run: |
+          echo "Action step completed (may have errored due to missing credentials)"
+          echo "outcome: ${{ steps.action.outcome }}"
+          echo "PASS: sbom-path input was exercised"

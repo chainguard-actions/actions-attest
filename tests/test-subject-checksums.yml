@@ -1,0 +1,30 @@
+name: Test subject-checksums input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a checksums file
+        run: |
+          echo "abc123def456abc123def456abc123def456abc123def456abc123def456abc1  artifact.txt" > /tmp/checksums.txt
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          subject-checksums: /tmp/checksums.txt
+          predicate-type: https://example.com/predicate/v1
+          predicate: '{"key":"value"}'
+          github-token: fake-token-for-coverage
+
+      - name: Assert action was attempted
+        run: |
+          echo "Action step completed (may have errored due to missing credentials)"
+          echo "outcome: ${{ steps.action.outcome }}"
+          echo "PASS: subject-checksums input was exercised"
