@@ -10,15 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a dummy SBOM file
+      - name: Create SBOM file
         run: |
           cat > /tmp/sbom.json << 'EOF'
           {
             "spdxVersion": "SPDX-2.3",
             "dataLicense": "CC0-1.0",
             "SPDXID": "SPDXRef-DOCUMENT",
-            "name": "example-sbom",
-            "documentNamespace": "https://example.com/sbom/example-1.0",
+            "name": "test-sbom",
+            "documentNamespace": "https://example.com/test-sbom",
             "packages": []
           }
           EOF
@@ -30,10 +30,9 @@ jobs:
           subject-digest: sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abc1
           subject-name: my-artifact
           sbom-path: /tmp/sbom.json
-          github-token: fake-token-for-coverage
+          github-token: ${{ github.token }}
 
-      - name: Assert action was attempted
+      - name: Assert action ran (may fail due to missing OIDC token in act)
         run: |
-          echo "Action step completed (may have errored due to missing credentials)"
-          echo "outcome: ${{ steps.action.outcome }}"
-          echo "PASS: sbom-path input was exercised"
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          echo "PASS: action step was reached"

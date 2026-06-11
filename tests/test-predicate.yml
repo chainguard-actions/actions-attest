@@ -1,4 +1,4 @@
-name: Test subject-checksums input
+name: Test predicate-type and predicate inputs
 on:
   workflow_dispatch:
 jobs:
@@ -10,17 +10,18 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create checksums file
+      - name: Create artifact file
         run: |
-          echo "abc123def456abc123def456abc123def456abc123def456abc123def456abc1  artifact.txt" > /tmp/checksums.txt
+          echo "hello world" > /tmp/artifact.txt
 
       - id: action
         uses: .
         continue-on-error: true
         with:
-          subject-checksums: /tmp/checksums.txt
-          predicate-type: https://example.com/predicate/v1
-          predicate: '{"key":"value"}'
+          subject-path: /tmp/artifact.txt
+          predicate-type: https://example.com/custom-predicate/v1
+          predicate: '{"builder":{"id":"https://example.com/builder"},"buildType":"https://example.com/build/v1"}'
+          show-summary: false
           github-token: ${{ github.token }}
 
       - name: Assert action ran (may fail due to missing OIDC token in act)
