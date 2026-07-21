@@ -1,35 +1,62 @@
-name: Test subject-digest input
+name: Test attestation with subject-digest (no-OIDC error path)
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run attestation action with subject-digest (expect failure due to missing OIDC in act)
-        id: action
+      - name: Compute digest of a test artifact
+        id: digest
+        run: |
+          echo "hello attestation" > /tmp/digest-artifact.txt
+          DIGEST="sha256:$(sha256sum /tmp/digest-artifact.txt | awk '{print $1}')"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "Computed digest: $DIGEST"
+
+      - id: action
         uses: .
         continue-on-error: true
         with:
-          subject-digest: sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abc1
-          subject-name: my-artifact
+          subject-digest: ${{ steps.digest.outputs.digest }}
+          subject-name: my-test-artifact
           predicate-type: https://example.com/predicate/v1
-          predicate: '{"key":"value"}'
-          github-token: fake-token-for-testing
+          predicate: '{"buildType":"digest-test","builder":"act"}'
           show-summary: false
+          github-token: ${{ github.token }}
 
-      - name: Assert action ran (not input validation failure)
+      - name: Assert action ran (either succeeded or failed with expected error)
         env:
           OUTCOME: ${{ steps.action.outcome }}
+          BUNDLE_PATH: ${{ steps.action.outputs.bundle-path }}
+          ATTESTATION_ID: ${{ steps.action.outputs.attestation-id }}
         run: |
           echo "outcome: $OUTCOME"
-          # The action should fail because of missing OIDC/API access, not because of bad inputs
-          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action ran with subject-digest input"
+          echo "bundle-path: $BUNDLE_PATH"
+          echo "attestation-id: $ATTESTATION_ID"
+          # Under act, OIDC is not available so the action will fail with
+          # "missing id-token permission" — that is the expected behavior.
+          # If it somehow succeeded (e.g. OIDC is available), verify outputs.
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$BUNDLE_PATH" ]; then
+              echo "FAIL: action succeeded but bundle-path is not set"
+              exit 1
+            fi
+            if [ ! -f "$BUNDLE_PATH" ]; then
+              echo "FAIL: bundle file does not exist at $BUNDLE_PATH"
+              exit 1
+            fi
+            echo "Bundle contents (first 500 chars):"
+            head -c 500 "$BUNDLE_PATH"
+            echo ""
+            echo "PASS: action succeeded and bundle file exists"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed as expected (OIDC not available under act)"
           else
             echo "FAIL: unexpected outcome: $OUTCOME"
             exit 1

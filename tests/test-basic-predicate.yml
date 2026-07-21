@@ -1,4 +1,4 @@
-name: Test attestation with predicate-path (no-OIDC error path)
+name: Test basic custom predicate attestation (no-OIDC error path)
 on:
   workflow_dispatch:
 jobs:
@@ -11,28 +11,17 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create test artifact and predicate file
+      - name: Create a test artifact
         run: |
-          echo "artifact content for predicate-path test" > /tmp/predicate-artifact.txt
-          cat > /tmp/predicate.json <<'EOF'
-          {
-            "buildType": "https://example.com/build/v1",
-            "builder": {
-              "id": "act-test-runner"
-            },
-            "metadata": {
-              "buildStartedOn": "2024-01-01T00:00:00Z"
-            }
-          }
-          EOF
+          echo "hello world" > /tmp/test-artifact.txt
 
       - id: action
         uses: .
         continue-on-error: true
         with:
-          subject-path: /tmp/predicate-artifact.txt
+          subject-path: /tmp/test-artifact.txt
           predicate-type: https://example.com/predicate/v1
-          predicate-path: /tmp/predicate.json
+          predicate: '{"buildType":"test","builder":"act"}'
           show-summary: false
           github-token: ${{ github.token }}
 
