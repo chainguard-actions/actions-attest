@@ -1,39 +1,66 @@
-name: Test predicate-path input
+name: Test attestation with predicate-path
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create artifact and predicate files
+      - name: Create predicate file
         run: |
-          echo "hello world" > /tmp/artifact.txt
           cat > /tmp/predicate.json << 'EOF'
           {
             "builder": {
-              "id": "https://example.com/builder"
+              "id": "https://github.com/actions/runner"
             },
             "buildType": "https://example.com/build/v1",
-            "invocation": {}
+            "invocation": {
+              "configSource": {}
+            }
           }
           EOF
+          echo "Created predicate file at /tmp/predicate.json"
 
       - id: action
         uses: .
         continue-on-error: true
         with:
-          subject-path: /tmp/artifact.txt
-          predicate-type: https://example.com/custom-predicate/v1
-          predicate-path: /tmp/predicate.json
+          subject-digest: "sha256:b948904f2f0f479b8f936065a3e9d9c4b0e7e8f1e3f4e5f6a7b8c9d0e1f2a3b5"
+          subject-name: "test-artifact-predicate-path"
+          predicate-type: "https://slsa.dev/provenance/v0.2"
+          predicate-path: "/tmp/predicate.json"
+          push-to-registry: false
           show-summary: false
           github-token: ${{ github.token }}
 
-      - name: Assert action ran (may fail due to missing OIDC token in act)
+      - name: Assert action ran (either succeeded or failed with expected error)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          BUNDLE_PATH: ${{ steps.action.outputs.bundle-path }}
         run: |
-          echo "Action outcome: ${{ steps.action.outcome }}"
-          echo "PASS: action step was reached"
+          echo "outcome: $OUTCOME"
+          echo "bundle-path: $BUNDLE_PATH"
+          # Under act, OIDC tokens are not available so the action will fail
+          # with a missing id-token permission error. This is expected behavior.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "Action succeeded - verifying outputs"
+            if [ -z "$BUNDLE_PATH" ]; then
+              echo "FAIL: action succeeded but bundle-path is empty"
+              exit 1
+            fi
+            if [ ! -f "$BUNDLE_PATH" ]; then
+              echo "FAIL: bundle file does not exist at $BUNDLE_PATH"
+              exit 1
+            fi
+            echo "PASS: action succeeded with bundle at $BUNDLE_PATH"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed as expected (OIDC not available under act)"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi

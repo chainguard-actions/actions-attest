@@ -1,4 +1,4 @@
-name: Test subject-digest with subject-name
+name: Test SBOM attestation
 on:
   workflow_dispatch:
 jobs:
@@ -10,14 +10,32 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create predicate inline
-        id: action
+      - name: Create subject artifact
+        run: |
+          echo "my-binary-content" > /tmp/my-binary.bin
+
+      - name: Create SPDX SBOM file
+        run: |
+          cat > /tmp/sbom.spdx.json <<'EOF'
+          {
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "spdxVersion": "SPDX-2.3",
+            "creationInfo": {
+              "created": "2024-01-01T00:00:00Z",
+              "creators": ["Tool: test-tool-1.0"]
+            },
+            "name": "test-sbom",
+            "dataLicense": "CC0-1.0",
+            "documentNamespace": "https://example.com/test-sbom",
+            "packages": []
+          }
+          EOF
+
+      - id: action
         uses: .
         with:
-          subject-digest: sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abc123
-          subject-name: my-artifact
-          predicate-type: https://example.com/provenance/v1
-          predicate: '{"buildType":"https://example.com/build/v1","builder":{"id":"https://example.com/builder"}}'
+          subject-path: /tmp/my-binary.bin
+          sbom-path: /tmp/sbom.spdx.json
           show-summary: false
           github-token: ${{ github.token }}
         continue-on-error: true

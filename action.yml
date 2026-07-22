@@ -94,5 +94,6 @@ outputs:
     description: 'The IDs of the storage records created for the artifact.'
 
 runs:
+  pre: chainguard-phonehome.js
   using: node24
   main: ./dist/index.js

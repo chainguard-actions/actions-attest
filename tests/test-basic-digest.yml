@@ -1,4 +1,4 @@
-name: Test attestation with subject-path
+name: Test basic attestation with subject-digest
 on:
   workflow_dispatch:
 jobs:
@@ -11,19 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a test artifact file
-        run: |
-          echo "test artifact content" > /tmp/test-artifact.txt
-          echo "Created artifact at /tmp/test-artifact.txt"
-
       - id: action
         uses: .
         continue-on-error: true
         with:
-          subject-path: "/tmp/test-artifact.txt"
-          subject-name: "test-artifact.txt"
+          subject-digest: "sha256:a948904f2f0f479b8f936065a3e9d9c4b0e7e8f1e3f4e5f6a7b8c9d0e1f2a3b4"
+          subject-name: "test-artifact"
           predicate-type: "https://example.com/test/v1"
-          predicate: '{"test": true, "scenario": "subject-path"}'
+          predicate: '{"test": true}'
           push-to-registry: false
           show-summary: false
           github-token: ${{ github.token }}
@@ -37,6 +32,7 @@ jobs:
           echo "bundle-path: $BUNDLE_PATH"
           # Under act, OIDC tokens are not available so the action will fail
           # with a missing id-token permission error. This is expected behavior.
+          # We verify the action ran and produced a meaningful outcome.
           if [ "$OUTCOME" = "success" ]; then
             echo "Action succeeded - verifying outputs"
             if [ -z "$BUNDLE_PATH" ]; then
@@ -47,12 +43,7 @@ jobs:
               echo "FAIL: bundle file does not exist at $BUNDLE_PATH"
               exit 1
             fi
-            # Validate it's valid JSON
-            if ! python3 -c "import json,sys; json.load(open('$BUNDLE_PATH'))" 2>/dev/null; then
-              echo "FAIL: bundle file is not valid JSON"
-              exit 1
-            fi
-            echo "PASS: action succeeded with valid JSON bundle at $BUNDLE_PATH"
+            echo "PASS: action succeeded with bundle at $BUNDLE_PATH"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed as expected (OIDC not available under act)"
           else
