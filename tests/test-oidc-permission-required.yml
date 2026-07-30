@@ -1,0 +1,34 @@
+name: Test OIDC id-token permission required
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Intentionally NOT granting id-token: write to test the permission check
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a test artifact file
+        run: echo "test artifact content" > /tmp/test-artifact.txt
+
+      - name: Run action without id-token permission (expect failure)
+        id: action
+        uses: .
+        with:
+          subject-path: /tmp/test-artifact.txt
+          predicate-type: https://example.com/predicate/v1
+          predicate: '{"key":"value"}'
+        continue-on-error: true
+
+      - name: Assert action failed due to missing id-token permission
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail but got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when id-token permission was not granted"

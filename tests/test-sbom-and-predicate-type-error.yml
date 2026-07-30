@@ -1,0 +1,47 @@
+name: Test sbom-path and predicate-type mutual exclusion error
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a test artifact file and a minimal SBOM file
+        run: |
+          echo "test artifact content" > /tmp/test-artifact.txt
+          cat > /tmp/test-sbom.json << 'EOF'
+          {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "test-sbom",
+            "documentNamespace": "https://example.com/test-sbom",
+            "packages": []
+          }
+          EOF
+
+      - name: Run action with both sbom-path and predicate-type (expect failure)
+        id: action
+        uses: .
+        with:
+          subject-path: /tmp/test-artifact.txt
+          sbom-path: /tmp/test-sbom.json
+          predicate-type: https://example.com/predicate/v1
+          predicate: '{"key":"value"}'
+        continue-on-error: true
+
+      - name: Assert action failed due to mutual exclusion of sbom-path and predicate-type
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail but got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when sbom-path and predicate-type were both provided"

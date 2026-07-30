@@ -1,0 +1,32 @@
+name: Test subject-digest without subject-name error
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with subject-digest but no subject-name (expect failure)
+        id: action
+        uses: .
+        with:
+          subject-digest: sha256:abc123def456abc123def456abc123def456abc123def456abc123def456abc1
+          predicate-type: https://example.com/predicate/v1
+          predicate: '{"key":"value"}'
+        continue-on-error: true
+
+      - name: Assert action failed due to missing subject-name
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail but got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when subject-digest was provided without subject-name"
