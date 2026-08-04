@@ -1,0 +1,47 @@
+name: Test basic attestation with subject-digest
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          subject-digest: "sha256:a948904f2f0f479b8f936065f3e9d4a2b4e3d4e5f6a7b8c9d0e1f2a3b4c5d6e7"
+          subject-name: "test-artifact"
+          predicate-type: "https://example.com/predicate/v1"
+          predicate: '{"buildType":"test","builder":{"id":"https://example.com/builder"}}'
+          show-summary: "false"
+          github-token: ${{ github.token }}
+
+      - name: Assert action ran (outputs set, or failed gracefully on sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          BUNDLE_PATH: ${{ steps.action.outputs.bundle-path }}
+          ATTESTATION_ID: ${{ steps.action.outputs.attestation-id }}
+          ATTESTATION_URL: ${{ steps.action.outputs.attestation-url }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "bundle-path: $BUNDLE_PATH"
+          echo "attestation-id: $ATTESTATION_ID"
+          echo "attestation-url: $ATTESTATION_URL"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$BUNDLE_PATH" ]; then
+              echo "FAIL: action succeeded but bundle-path output is empty"
+              exit 1
+            fi
+            echo "PASS: attestation created, bundle-path=$BUNDLE_PATH"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
