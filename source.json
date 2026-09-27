@@ -1,6 +1,11 @@
 {
   "owner": "actions",
   "repo": "attest",
-  "version": "",
-  "url": "https://github.com/actions/attest"
+  "version": "v2.4.0",
+  "commit_sha": "ce27ba3b4a9a139d9a20a4a07d69fabb52f1e5bc",
+  "url": "https://github.com/actions/attest",
+  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
+  "test_agent_version": "2",
+  "harden_agent_version": "2"
 }
