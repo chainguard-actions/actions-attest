@@ -9,7 +9,9 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v0.1.0 | [`v0.1.0`](https://github.com/chainguard-actions/actions-attest/tree/v0.1.0) | [`14e407c`](https://github.com/actions/attest/commit/14e407ca15f1b08f4869fc058b059f7f1e434df6) |
+| v1.2.0 | [`v1.2.0`](https://github.com/chainguard-actions/actions-attest/tree/v1.2.0) | [`32795ed`](https://github.com/actions/attest/commit/32795ed9174327efe1734fa6d09c9223658ef225) |
 | v1.3.3 | [`v1.3.3`](https://github.com/chainguard-actions/actions-attest/tree/v1.3.3) | [`7305951`](https://github.com/actions/attest/commit/7305951e905fb742188aa16c1d23409b13565e26) |
+| v1.4.0 | [`v1.4.0`](https://github.com/chainguard-actions/actions-attest/tree/v1.4.0) | [`2da0b13`](https://github.com/actions/attest/commit/2da0b136720d14f01f4dbeeafd1d5a4d76cbe21d) |
 | v1.4.1 | [`v1.4.1`](https://github.com/chainguard-actions/actions-attest/tree/v1.4.1) | [`67422f5`](https://github.com/actions/attest/commit/67422f5511b7ff725f4dbd6fb9bd2cd925c65a8d) |
 | v2.2.1 | [`v2.2.1`](https://github.com/chainguard-actions/actions-attest/tree/v2.2.1) | [`a63cfcc`](https://github.com/actions/attest/commit/a63cfcc7d1aab266ee064c58250cfc2c7d07bc31) |
 | v2.4.0 | [`v2.4.0`](https://github.com/chainguard-actions/actions-attest/tree/v2.4.0) | [`ce27ba3`](https://github.com/actions/attest/commit/ce27ba3b4a9a139d9a20a4a07d69fabb52f1e5bc) |
