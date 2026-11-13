@@ -4,8 +4,13 @@
   "version": "v4.2.1",
   "commit_sha": "508db95dd578ae2727ebd6217d5ba78e4fbda05d",
   "url": "https://github.com/actions/attest",
-  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
   "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
   "test_agent_version": "2",
-  "harden_agent_version": "2"
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/actions/attest/v4.2.1/sha256-f89b4c875ed319e80871e60f09adfb4f7e0be9681090a8f9dd3b7afe858773bb.tar.gz",
+    "sha256": "f89b4c875ed319e80871e60f09adfb4f7e0be9681090a8f9dd3b7afe858773bb",
+    "size_bytes": 1372496
+  }
 }
